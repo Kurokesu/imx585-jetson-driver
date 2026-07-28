@@ -11,7 +11,11 @@ NVIDIA Jetson kernel driver for Sony IMX585, an 8.3 MP STARVIS 2 back-side illum
 - 1928×1090 (2×2 binned) @ 25 fps
 
 > [!NOTE]
-> Bring-up release runs both modes at conservative 720 Mbps/lane, which caps frame rate at 25 fps. Higher link rates, ClearHDR and mono variant support are planned.
+> Bring-up release runs both modes at conservative 720 Mbps/lane, which caps frame rate at 25 fps. Higher link rates, ClearHDR and mono support are planned.
+
+![Kurokesu on Jetson](./docs/kurokesu-on-jetson.jpg)
+
+*IMX585 camera modules are available at [kurokesu.com](https://www.kurokesu.com/item/585C-CSI)*
 
 ## Setup
 
