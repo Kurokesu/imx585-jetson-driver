@@ -783,7 +783,7 @@ static int imx585_probe(struct i2c_client *client,
 
 	priv->i2c_client = tc_dev->client = client;
 	tc_dev->dev = dev;
-	strncpy(tc_dev->name, "imx585", sizeof(tc_dev->name));
+	strscpy(tc_dev->name, "imx585", sizeof(tc_dev->name));
 	tc_dev->dev_regmap_config = &sensor_regmap_config;
 	tc_dev->sensor_ops = &imx585_common_ops;
 	tc_dev->v4l2sd_internal_ops = &imx585_subdev_internal_ops;
