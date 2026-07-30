@@ -18,6 +18,11 @@ PACKAGE_NAME=$(grep '^PACKAGE_NAME=' "$DKMS_CONF" | cut -d'"' -f2)
 SENSOR=$(grep '^BUILT_MODULE_NAME=' "$DKMS_CONF" | cut -d'"' -f2 | sed 's/^nv_//')
 DKMS_SRC="/usr/src/${PACKAGE_NAME}-${VERSION}"
 
+if [ -z "$VERSION" ] || [ -z "$PACKAGE_NAME" ] || [ -z "$SENSOR" ]; then
+	echo "Error: failed to parse $DKMS_CONF"
+	exit 1
+fi
+
 # Check prerequisites
 if ! command -v dkms >/dev/null 2>&1; then
 	echo "Error: dkms not installed. Run:"
