@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0
 /*
- * nv_imx585.c - imx585 sensor driver
+ * imx585 sensor driver
  *
  * Copyright (c) 2016-2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
  * Copyright (c) 2026, UAB Kurokesu. All rights reserved.
