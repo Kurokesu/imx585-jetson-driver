@@ -647,6 +647,11 @@ static int imx585_start_streaming(struct tegracam_device *tc_dev)
 
 	dev_dbg(tc_dev->dev, "%s:\n", __func__);
 
+	if (test_mode < 0 || test_mode > ARRAY_SIZE(imx585_tpg_val)) {
+		dev_err(tc_dev->dev, "invalid test_mode %d\n", test_mode);
+		return -EINVAL;
+	}
+
 	if (test_mode) {
 		dev_dbg(tc_dev->dev, "test pattern mode %d\n", test_mode);
 
