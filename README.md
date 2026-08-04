@@ -47,7 +47,7 @@ Setup script:
 - Builds and installs kernel module via [DKMS](https://github.com/dell/dkms)
 - Builds and copies device tree overlay (`.dtbo`) to `/boot`
 
-Use Jetson-IO to configure the CSI connector:
+Use Jetson-IO to configure CSI connector:
 
 > [!NOTE]
 > IMX585 requires 4-lane MIPI CSI, so only port C (`cam1`) is supported.
@@ -62,7 +62,7 @@ Navigate through the menu:
 2. Configure for compatible hardware
 3. Select `Camera IMX585-C`
 
-![jetson-io-tool](./docs/jetson-io-tool.png "jetson-io-tool")
+    ![Jetson-IO menu with Camera IMX585-C selected.](./docs/jetson-io-tool.png)
 
 4. Save pin changes
 5. Save and reboot to reconfigure pins
