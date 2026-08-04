@@ -10,14 +10,18 @@ set -e
 # Status line formatter (matches Makefile's PRINT)
 print() { printf '  %-7s %s\n' "$1" "$2"; }
 
-# Derive package identity and paths from dkms.conf
+# Package identity and install paths
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 DKMS_CONF="$SCRIPT_DIR/dkms.conf"
 VERSION=$(grep '^PACKAGE_VERSION=' "$DKMS_CONF" | cut -d'"' -f2)
 PACKAGE_NAME=$(grep '^PACKAGE_NAME=' "$DKMS_CONF" | cut -d'"' -f2)
 SENSOR=$(grep '^BUILT_MODULE_NAME=' "$DKMS_CONF" | cut -d'"' -f2 | sed 's/^nv_//')
 DKMS_SRC="/usr/src/${PACKAGE_NAME}-${VERSION}"
+TUNING_DIR="$SCRIPT_DIR/tuning"
+NVCAM_SETTINGS="/var/nvidia/nvcam/settings"
+GLOBAL_ISP="$NVCAM_SETTINGS/camera_overrides.isp"
 
+# Check required variables
 if [ -z "$VERSION" ] || [ -z "$PACKAGE_NAME" ] || [ -z "$SENSOR" ]; then
 	echo "Error: failed to parse $DKMS_CONF"
 	exit 1
@@ -37,12 +41,22 @@ if [ ! -e "/lib/modules/$(uname -r)/build/Makefile" ]; then
 	exit 1
 fi
 
-# Remove DKMS registrations matching sensor name
+# Remove DKMS registrations matching sensor name, sweep their source trees
 dkms status 2>/dev/null | sed 's/[,:].*//' | sort -u | while read -r ENTRY; do
 	case "${ENTRY%%/*}" in
 	*"$SENSOR"*)
 		print DKMS "remove $ENTRY"
-		dkms remove "$ENTRY" --all || true
+		if OUT=$(dkms remove "$ENTRY" --all 2>&1); then
+			# dkms remove only deregisters, source tree is installer's to clean
+			OLD_SRC="/usr/src/${ENTRY%%/*}-${ENTRY#*/}"
+			if [ -f "$OLD_SRC/dkms.conf" ]; then
+				print CLEAN "$OLD_SRC"
+				rm -rf "$OLD_SRC" || print WARN "could not remove $OLD_SRC" >&2
+			fi
+		else
+			print WARN "could not fully remove $ENTRY" >&2
+			printf '%s\n' "$OUT" >&2
+		fi
 		;;
 	esac
 done
@@ -71,6 +85,17 @@ dkms build -m "$PACKAGE_NAME" -v "$VERSION"
 
 print DKMS "install ${PACKAGE_NAME}/${VERSION}"
 dkms install -m "$PACKAGE_NAME" -v "$VERSION"
+
+# Install ISP tuning
+if [ -d "$TUNING_DIR" ]; then
+	print COPY "ISP tuning -> $NVCAM_SETTINGS"
+	cp "$TUNING_DIR"/*.isp "$NVCAM_SETTINGS/"
+
+	if [ -e "$GLOBAL_ISP" ]; then
+		print RETIRE "camera_overrides.isp -> camera_overrides.isp.bak"
+		mv "$GLOBAL_ISP" "$GLOBAL_ISP.bak"
+	fi
+fi
 
 echo ""
 echo "Done. To configure CSI connector, run:"
