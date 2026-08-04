@@ -49,12 +49,12 @@ Setup script:
 
 Use Jetson-IO to configure CSI connector:
 
-> [!NOTE]
-> IMX585 requires 4-lane MIPI CSI, so only port C (`cam1`) is supported.
-
 ```bash
 sudo /opt/nvidia/jetson-io/jetson-io.py
 ```
+
+> [!NOTE]
+> IMX585 requires 4-lane MIPI CSI, so only port C (`cam1`) is supported.
 
 Navigate through the menu:
 
