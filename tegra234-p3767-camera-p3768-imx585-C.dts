@@ -47,8 +47,8 @@
 				 */
 				modules {
 					module1 {
-						badge = "kurokesu_front_585CSI";
-						position = "front";
+						badge = "kurokesu_rear_585CSI";
+						position = "rear";
 						orientation = "0";
 						drivernode0 {
 							pcl_id = "v4l2_sensor";
