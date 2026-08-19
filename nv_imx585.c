@@ -151,6 +151,15 @@ static inline void imx585_get_vmax_regs(imx585_reg *regs, u32 vmax)
 	(regs + 2)->val = vmax & 0xFF;
 }
 
+static inline void imx585_get_hmax_regs(imx585_reg *regs, u16 hmax)
+{
+	regs->addr = IMX585_REG_HMAX_MSB;
+	regs->val = (hmax >> 8) & 0xFF;
+
+	(regs + 1)->addr = IMX585_REG_HMAX_LSB;
+	(regs + 1)->val = hmax & 0xFF;
+}
+
 static inline void imx585_get_shr_regs(imx585_reg *regs, u32 shr)
 {
 	regs->addr = IMX585_REG_SHR_MSB;
@@ -615,7 +624,9 @@ static int imx585_set_mode(struct tegracam_device *tc_dev)
 	struct imx585 *priv = (struct imx585 *)tegracam_get_privdata(tc_dev);
 	struct camera_common_data *s_data = tc_dev->s_data;
 	int mode_ix = s_data->mode;
-	int err = 0;
+	imx585_reg hmax_regs[2];
+	u16 hmax;
+	int err, i;
 
 	if (mode_ix < 0 || mode_ix >= IMX585_MODE_COMMON) {
 		dev_err(tc_dev->dev, "%s: invalid mode %d\n", __func__,
@@ -623,9 +634,15 @@ static int imx585_set_mode(struct tegracam_device *tc_dev)
 		return -EINVAL;
 	}
 
-	dev_dbg(tc_dev->dev, "%s: mode %d (%ux%u)\n", __func__, mode_ix,
-		imx585_frmfmt[mode_ix].size.width,
-		imx585_frmfmt[mode_ix].size.height);
+	if (s_data->numlanes != 2 && s_data->numlanes != 4) {
+		dev_err(tc_dev->dev, "%s: invalid lane count %d\n", __func__,
+			s_data->numlanes);
+		return -EINVAL;
+	}
+
+	dev_dbg(tc_dev->dev, "%s: mode %d (%ux%u), %d lanes\n", __func__,
+		mode_ix, imx585_frmfmt[mode_ix].size.width,
+		imx585_frmfmt[mode_ix].size.height, s_data->numlanes);
 
 	err = imx585_write_table(priv, mode_table[IMX585_MODE_COMMON]);
 	if (err)
@@ -634,6 +651,22 @@ static int imx585_set_mode(struct tegracam_device *tc_dev)
 	err = imx585_write_table(priv, mode_table[mode_ix]);
 	if (err)
 		return err;
+
+	err = imx585_write_reg(s_data, IMX585_REG_LANEMODE,
+			       IMX585_LANEMODE_NUM_LANES(s_data->numlanes));
+	if (err)
+		return err;
+
+	hmax = IMX585_HMAX_MIN_4LANE * 4 / s_data->numlanes;
+
+	imx585_get_hmax_regs(hmax_regs, hmax);
+
+	for (i = 0; i < ARRAY_SIZE(hmax_regs); i++) {
+		err = imx585_write_reg(s_data, hmax_regs[i].addr,
+				       hmax_regs[i].val);
+		if (err)
+			return err;
+	}
 
 	priv->frame_length = IMX585_FRAME_LENGTH_DEFAULT;
 
