@@ -257,7 +257,6 @@
 								dynamic_pixel_bit_depth = "12";
 								csi_pixel_bit_depth = "12";
 								readout_orientation = "0";
-								/* Same HMAX = 1320 as mode0 */
 								line_length = "4224";
 								inherent_gain = "1";
 								mclk_multiplier = "10";

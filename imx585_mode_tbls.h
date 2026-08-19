@@ -55,6 +55,10 @@
 #define IMX585_MODE_STANDBY 0x01
 #define IMX585_MODE_STREAMING 0x00
 
+#define IMX585_LANEMODE_NUM_LANES(_num_lanes) ((_num_lanes)-1)
+
+#define IMX585_HMAX_MIN_4LANE 1320
+
 #define imx585_reg struct reg_8
 
 static imx585_reg imx585_mode_common[] = {
@@ -300,9 +304,6 @@ static imx585_reg imx585_mode_common[] = {
 	/* 720 Mbps/lane */
 	{ IMX585_REG_DATARATE_SEL, 0x06 },
 
-	/* 4-lane MIPI CSI-2 */
-	{ IMX585_REG_LANEMODE, 0x03 },
-
 	/* Color sensor variant */
 	{ IMX585_REG_BIN_MODE, 0x00 },
 
@@ -339,13 +340,9 @@ static imx585_reg imx585_mode_3856x2180_12bit[] = {
 	/* Disable digital clamp */
 	{ IMX585_REG_DIGITAL_CLAMP, 0x00 },
 
-	/* Same timing as binned mode, line is 16.07 us on the wire */
 	{ IMX585_REG_VMAX_LSB, 2250 & 0xFF },
 	{ IMX585_REG_VMAX_MID, (2250 >> 8) & 0xFF },
 	{ IMX585_REG_VMAX_MSB, (2250 >> 16) & 0xFF },
-
-	{ IMX585_REG_HMAX_LSB, 1320 & 0xFF },
-	{ IMX585_REG_HMAX_MSB, (1320 >> 8) & 0xFF },
 
 	/* SHR = 8 (minimum, longest exposure) */
 	{ IMX585_REG_SHR_LSB, 0x08 },
@@ -380,14 +377,10 @@ static imx585_reg imx585_mode_1928x1090_12bit[] = {
 	/* Disable digital clamp */
 	{ IMX585_REG_DIGITAL_CLAMP, 0x00 },
 
-	/* VMAX = 2250 -> 25 fps at HMAX = 1320 */
+	/* VMAX = 2250 lines */
 	{ IMX585_REG_VMAX_LSB, 2250 & 0xFF },
 	{ IMX585_REG_VMAX_MID, (2250 >> 8) & 0xFF },
 	{ IMX585_REG_VMAX_MSB, (2250 >> 16) & 0xFF },
-
-	/* HMAX = 1320 @ 74.25 MHz = 17.78 us/line, min for 720 Mbps/lane */
-	{ IMX585_REG_HMAX_LSB, 1320 & 0xFF },
-	{ IMX585_REG_HMAX_MSB, (1320 >> 8) & 0xFF },
 
 	/* SHR = 8 (minimum, longest exposure) */
 	{ IMX585_REG_SHR_LSB, 0x08 },
