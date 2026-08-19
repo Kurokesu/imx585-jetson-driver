@@ -7,13 +7,14 @@
 
 NVIDIA Jetson kernel driver for Sony IMX585, an 8.3 MP STARVIS 2 back-side illuminated CMOS sensor optimised for low-light and 4K applications.
 
-- 4-lane MIPI CSI-2
+- 2-lane and 4-lane MIPI CSI-2
 - 12-bit RAW output
-- 3856×2180 (full resolution) @ 25 fps
-- 1928×1090 (2×2 binned) @ 25 fps
+- 3856×2180 (full resolution)
+- 1928×1090 (2×2 binned)
+- 25 fps on 4 lanes, 12.5 fps on 2 lanes
 
 > [!NOTE]
-> Bring-up release runs both modes at conservative 720 Mbps/lane, which caps frame rate at 25 fps. Higher link rates, ClearHDR and mono support are planned.
+> Bring-up release runs both modes at conservative 720 Mbps/lane, which caps frame rate at 25 fps on 4 lanes. Higher link rates, ClearHDR and mono support are planned.
 
 ![Kurokesu camera modules connected to a Jetson carrier board over CSI ribbon cables.](./docs/kurokesu-on-jetson.jpg)
 
@@ -45,7 +46,7 @@ Setup script:
 
 - Fetches NVIDIA device tree headers required for build
 - Builds and installs kernel module via [DKMS](https://github.com/dell/dkms)
-- Builds and copies device tree overlay (`.dtbo`) to `/boot`
+- Builds and copies device tree overlays (`.dtbo`) to `/boot`
 
 Use Jetson-IO to configure CSI connector:
 
@@ -53,14 +54,14 @@ Use Jetson-IO to configure CSI connector:
 sudo /opt/nvidia/jetson-io/jetson-io.py
 ```
 
-> [!NOTE]
-> IMX585 requires 4-lane MIPI CSI, so only port C (`cam1`) is supported.
-
 Navigate through the menu:
 
 1. Configure Jetson CSI Connector (named "22pin" on 6.2.2, "24pin" on 6.2.1)
 2. Configure for compatible hardware
-3. Select `Camera IMX585-C`
+3. Select port configuration:
+
+    - `Camera IMX585-A` - cam0
+    - `Camera IMX585-C` - cam1
 
     ![Jetson-IO menu with Camera IMX585-C selected.](./docs/jetson-io-tool.png)
 
@@ -97,6 +98,8 @@ gst-launch-1.0 -e nvarguscamerasrc sensor-id=0 ! \
    'video/x-raw(memory:NVMM),width=3856,height=2180,framerate=25/1' ! \
    queue ! nvvidconv ! queue ! nveglglessink
 ```
+
+*On `cam0`, use `framerate=25/2` for 12.5 fps.*
 
 ## Test mode
 
@@ -140,7 +143,7 @@ sudo make install # copy dtbo to /boot, rmmod + insmod
 Individual targets:
 
 ```bash
-make dtbo      # build only the device tree overlay
+make dtbo      # build only the device tree overlays
 make module    # build only the kernel module
 make clean     # remove build artifacts
 ```
