@@ -60,8 +60,8 @@ Navigate through the menu:
 2. Configure for compatible hardware
 3. Select port configuration:
 
-    - `Camera IMX585-A` - cam0
-    - `Camera IMX585-C` - cam1
+    - `Camera IMX585-A` - cam0 (2-lane)
+    - `Camera IMX585-C` - cam1 (4-lane)
 
     ![Jetson-IO menu with Camera IMX585-C selected.](./docs/jetson-io-tool.png)
 
@@ -99,7 +99,7 @@ gst-launch-1.0 -e nvarguscamerasrc sensor-id=0 ! \
    queue ! nvvidconv ! queue ! nveglglessink
 ```
 
-*On `cam0`, use `framerate=25/2` for 12.5 fps.*
+*On `cam0`, use `framerate=12/1`.*
 
 ## Test mode
 
