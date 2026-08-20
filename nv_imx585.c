@@ -623,14 +623,14 @@ static int imx585_set_mode(struct tegracam_device *tc_dev)
 {
 	struct imx585 *priv = (struct imx585 *)tegracam_get_privdata(tc_dev);
 	struct camera_common_data *s_data = tc_dev->s_data;
-	int mode_ix = s_data->mode;
+	int mode_index = s_data->mode;
 	imx585_reg hmax_regs[2];
 	u16 hmax;
 	int err, i;
 
-	if (mode_ix < 0 || mode_ix >= IMX585_MODE_COMMON) {
+	if (mode_index < 0 || mode_index >= IMX585_MODE_COMMON) {
 		dev_err(tc_dev->dev, "%s: invalid mode %d\n", __func__,
-			mode_ix);
+			mode_index);
 		return -EINVAL;
 	}
 
@@ -641,14 +641,14 @@ static int imx585_set_mode(struct tegracam_device *tc_dev)
 	}
 
 	dev_dbg(tc_dev->dev, "%s: mode %d (%ux%u), %d lanes\n", __func__,
-		mode_ix, imx585_frmfmt[mode_ix].size.width,
-		imx585_frmfmt[mode_ix].size.height, s_data->numlanes);
+		mode_index, imx585_frmfmt[mode_index].size.width,
+		imx585_frmfmt[mode_index].size.height, s_data->numlanes);
 
 	err = imx585_write_table(priv, mode_table[IMX585_MODE_COMMON]);
 	if (err)
 		return err;
 
-	err = imx585_write_table(priv, mode_table[mode_ix]);
+	err = imx585_write_table(priv, mode_table[mode_index]);
 	if (err)
 		return err;
 
