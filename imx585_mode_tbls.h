@@ -55,7 +55,7 @@
 #define IMX585_MODE_STANDBY 0x01
 #define IMX585_MODE_STREAMING 0x00
 
-#define IMX585_LANEMODE_NUM_LANES(_num_lanes) ((_num_lanes)-1)
+#define IMX585_LANEMODE_NUM_LANES(_num_lanes) ((_num_lanes) - 1)
 
 #define IMX585_HMAX_MIN_4LANE 1320
 
