@@ -220,7 +220,6 @@
 								readout_orientation = "0";
 								line_length = "4224";
 								inherent_gain = "1";
-								mclk_multiplier = "10";
 								pix_clk_hz = "237600000";
 								gain_factor = "10";
 								framerate_factor = "1000000";
@@ -259,7 +258,6 @@
 								readout_orientation = "0";
 								line_length = "4224";
 								inherent_gain = "1";
-								mclk_multiplier = "10";
 								pix_clk_hz = "237600000";
 								gain_factor = "10";
 								framerate_factor = "1000000";
