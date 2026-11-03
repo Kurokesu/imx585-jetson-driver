@@ -353,9 +353,9 @@ static imx585_reg imx585_mode_3856x2180_12bit[] = {
 };
 
 static imx585_reg imx585_mode_1928x1090_12bit[] = {
-	/* 2x2 binning */
+	/* 2x2 binning, 10-bit AD conversion, 12-bit output */
 	{ IMX585_REG_ADDMODE, 0x01 },
-	{ IMX585_REG_ADBIT, 0x02 },
+	{ IMX585_REG_ADBIT, 0x00 },
 	{ IMX585_REG_MDBIT, 0x01 },
 	{ IMX585_REG_DIG_CLP_VSTART, 0x02 },
 
@@ -364,8 +364,9 @@ static imx585_reg imx585_mode_1928x1090_12bit[] = {
 	{ IMX585_REG_COMBI_EN, 0x00 },
 	{ 0x3069, 0x00 },
 	{ 0x3074, 0x64 },
-	{ 0x3930, 0x0C },
-	{ 0x3931, 0x01 },
+	/* AD conversion duration for 10-bit */
+	{ 0x3930, 0x66 },
+	{ 0x3931, 0x00 },
 	{ 0x3A4C, 0x39 },
 	{ 0x3A4D, 0x01 },
 	{ 0x3A50, 0x48 },
