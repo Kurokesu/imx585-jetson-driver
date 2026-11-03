@@ -630,6 +630,8 @@ static int imx585_set_mode(struct tegracam_device *tc_dev)
 {
 	struct imx585 *priv = (struct imx585 *)tegracam_get_privdata(tc_dev);
 	struct camera_common_data *s_data = tc_dev->s_data;
+	const struct sensor_mode_properties *mode =
+		&s_data->sensor_props.sensor_modes[s_data->mode_prop_idx];
 	int mode_index = s_data->mode;
 	imx585_reg hmax_regs[2];
 	u16 hmax;
@@ -675,9 +677,10 @@ static int imx585_set_mode(struct tegracam_device *tc_dev)
 			return err;
 	}
 
-	priv->frame_length = IMX585_FRAME_LENGTH_DEFAULT;
+	priv->exposure_us = 0;
 
-	return 0;
+	return imx585_set_frame_rate(
+		tc_dev, mode->control_properties.default_framerate);
 }
 
 static int imx585_start_streaming(struct tegracam_device *tc_dev)
