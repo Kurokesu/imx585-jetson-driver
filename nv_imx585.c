@@ -84,6 +84,7 @@ struct imx585 {
 	struct camera_common_data *s_data;
 	struct tegracam_device *tc_dev;
 	u32 frame_length;
+	s64 exposure_us;
 };
 
 static const struct regmap_config sensor_regmap_config = {
@@ -280,6 +281,8 @@ static int imx585_set_exposure(struct tegracam_device *tc_dev, s64 val)
 
 	dev_dbg(dev, "%s: val: %lld\n", __func__, val);
 
+	priv->exposure_us = val;
+
 	err = imx585_set_coarse_time(priv, val);
 	if (err)
 		dev_dbg(dev, "%s: error setting exposure\n", __func__);
@@ -327,6 +330,10 @@ static int imx585_set_frame_rate(struct tegracam_device *tc_dev, s64 val)
 	}
 
 	priv->frame_length = vmax;
+
+	/* SHR counts from frame end, keep exposure when frame length changes */
+	if (priv->exposure_us)
+		err = imx585_set_coarse_time(priv, priv->exposure_us);
 
 	return err;
 }
