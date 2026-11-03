@@ -7,15 +7,13 @@
 
 NVIDIA Jetson kernel driver for Sony IMX585, an 8.3 MP STARVIS 2 back-side illuminated CMOS sensor optimised for low-light and 4K applications.
 
+- 3856×2180 up to 60 fps
+- 1928×1090 up to 60 fps (2×2 binning)
+- 10-bit and 12-bit RAW output
 - 2-lane and 4-lane MIPI CSI-2, single or dual camera
-- 12-bit RAW output
-- 3856×2180 (full resolution)
-- 1928×1090 (2×2 binned)
-- 50 fps full resolution and 60 fps binned on 4 lanes
-- 12.5 fps full resolution and 15 fps binned on 2 lanes
 
 > [!NOTE]
-> 10-bit modes, ClearHDR and mono support are planned.
+> ClearHDR and mono support are planned.
 
 ![Kurokesu camera modules connected to a Jetson carrier board over CSI ribbon cables.](./docs/kurokesu-on-jetson.jpg)
 
@@ -94,13 +92,15 @@ Sensor modes, selected with Argus `sensor-mode` or V4L2 `sensor_mode`:
 | Mode                            | Port | Data rate / lane | Lanes | Bit depth | Width | Height | Max fps  |
 | ------------------------------- | ---- | ---------------- | ----- | --------- | ----- | ------ | -------- |
 | **3856×2180 (full resolution)** |      |                  |       |           |       |        |          |
-| 0                               | cam0 | 720 Mbps         | 2     | 12        | 3856  | 2180   | 12.5 fps |
-| 0                               | cam1 | 1440 Mbps        | 4     | 12        | 3856  | 2180   | 50 fps   |
+| 0                               | cam0 | 720 Mbps         | 2     | 10        | 3856  | 2180   | 15 fps   |
+| 0                               | cam1 | 1440 Mbps        | 4     | 10        | 3856  | 2180   | 60 fps   |
+| 1                               | cam0 | 720 Mbps         | 2     | 12        | 3856  | 2180   | 12.5 fps |
+| 1                               | cam1 | 1440 Mbps        | 4     | 12        | 3856  | 2180   | 50 fps   |
 | **1928×1090 (2×2 binned)**      |      |                  |       |           |       |        |          |
-| 1                               | cam0 | 720 Mbps         | 2     | 12        | 1928  | 1090   | 15 fps   |
-| 1                               | cam1 | 1440 Mbps        | 4     | 12        | 1928  | 1090   | 60 fps   |
+| 2                               | cam0 | 720 Mbps         | 2     | 12        | 1928  | 1090   | 15 fps   |
+| 2                               | cam1 | 1440 Mbps        | 4     | 12        | 1928  | 1090   | 60 fps   |
 
-*Without `sensor-mode`, `nvarguscamerasrc` picks mode from requested resolution and frame rate.*
+*Without `sensor-mode`, `nvarguscamerasrc` picks last mode that fits requested resolution and frame rate. Full resolution runs 12-bit up to 50 fps and 10-bit above.*
 
 ### GStreamer
 
@@ -108,7 +108,7 @@ Single:
 
 ```bash
 gst-launch-1.0 -e nvarguscamerasrc sensor-id=0 ! \
-   'video/x-raw(memory:NVMM),width=3856,height=2180,framerate=50/1' ! \
+   'video/x-raw(memory:NVMM),width=3856,height=2180,framerate=60/1' ! \
    queue ! nvvidconv ! queue ! nveglglessink
 ```
 
@@ -119,7 +119,7 @@ Dual:
 ```bash
 gst-launch-1.0 -e \
    nvarguscamerasrc sensor-id=0 ! \
-      'video/x-raw(memory:NVMM),width=3856,height=2180,framerate=50/1' ! \
+      'video/x-raw(memory:NVMM),width=3856,height=2180,framerate=60/1' ! \
       queue ! nvvidconv ! queue ! nveglglessink \
    nvarguscamerasrc sensor-id=1 ! \
       'video/x-raw(memory:NVMM),width=3856,height=2180,framerate=12/1' ! \
@@ -137,11 +137,11 @@ sudo apt install -y v4l-utils
 > [!IMPORTANT]
 > With dual overlay, NVIDIA maps cam1 to `/dev/video0` and cam0 to `/dev/video1`.
 
-Stream raw 12-bit frame to file:
+Stream raw 12-bit frame to file (for 10-bit use `sensor_mode=0` with `pixelformat=RG10`):
 
 ```bash
 v4l2-ctl -d /dev/video0 \
-   --set-ctrl bypass_mode=0,sensor_mode=0,override_enable=1 \
+   --set-ctrl bypass_mode=0,sensor_mode=1,override_enable=1 \
    --set-ctrl frame_rate=50000000,exposure=10000,gain=0 \
    --set-fmt-video=width=3856,height=2180,pixelformat=RG12 \
    --stream-mmap --stream-skip=10 --stream-count=1 \
@@ -150,15 +150,15 @@ v4l2-ctl -d /dev/video0 \
 
 *`override_enable=1` applies frame rate, exposure and gain. Controls keep last written value across sessions, so set them explicitly. Frame rate is in fps × 1000000, exposure in µs and gain in dB × 10 (0 to 720, step 3).*
 
-*`sensor_mode` selects sensor readout and must match format resolution.*
+*`sensor_mode` selects sensor readout and must match format resolution and bit depth.*
 
 Stream cam1 binned at 60 fps. Frame rate limit follows active mode, so select binned mode first:
 
 ```bash
-v4l2-ctl -d /dev/video0 --set-ctrl sensor_mode=1 \
+v4l2-ctl -d /dev/video0 --set-ctrl sensor_mode=2 \
    --set-fmt-video=width=1928,height=1090,pixelformat=RG12
 v4l2-ctl -d /dev/video0 \
-   --set-ctrl bypass_mode=0,sensor_mode=1,override_enable=1 \
+   --set-ctrl bypass_mode=0,sensor_mode=2,override_enable=1 \
    --set-ctrl frame_rate=60000000,exposure=10000,gain=0 \
    --set-fmt-video=width=1928,height=1090,pixelformat=RG12 \
    --stream-mmap --stream-skip=10 --stream-count=1 \
