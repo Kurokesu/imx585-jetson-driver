@@ -635,6 +635,7 @@ static int imx585_set_mode(struct tegracam_device *tc_dev)
 	int mode_index = s_data->mode;
 	imx585_reg hmax_regs[2];
 	u16 hmax;
+	u8 datarate;
 	int err, i;
 
 	if (mode_index < 0 || mode_index >= IMX585_MODE_COMMON) {
@@ -666,7 +667,17 @@ static int imx585_set_mode(struct tegracam_device *tc_dev)
 	if (err)
 		return err;
 
-	hmax = IMX585_HMAX_MIN_4LANE * 4 / s_data->numlanes;
+	if (s_data->numlanes == 4) {
+		datarate = IMX585_DATARATE_1440;
+		hmax = imx585_hmax_4lane_1440[mode_index];
+	} else {
+		datarate = IMX585_DATARATE_720;
+		hmax = imx585_hmax_2lane_720[mode_index];
+	}
+
+	err = imx585_write_reg(s_data, IMX585_REG_DATARATE_SEL, datarate);
+	if (err)
+		return err;
 
 	imx585_get_hmax_regs(hmax_regs, hmax);
 

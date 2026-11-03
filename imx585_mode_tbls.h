@@ -57,7 +57,9 @@
 
 #define IMX585_LANEMODE_NUM_LANES(_num_lanes) ((_num_lanes) - 1)
 
-#define IMX585_HMAX_MIN_4LANE 1320
+/* Data rate register values */
+#define IMX585_DATARATE_1440 0x03
+#define IMX585_DATARATE_720 0x06
 
 #define imx585_reg struct reg_8
 
@@ -301,9 +303,6 @@ static imx585_reg imx585_mode_common[] = {
 	{ IMX585_REG_BLKLEVEL_LSB, 0x32 },
 	{ IMX585_REG_BLKLEVEL_MSB, 0x00 },
 
-	/* 720 Mbps/lane */
-	{ IMX585_REG_DATARATE_SEL, 0x06 },
-
 	/* Color sensor variant */
 	{ IMX585_REG_BIN_MODE, 0x00 },
 
@@ -403,8 +402,22 @@ static imx585_reg *mode_table[] = {
 	[IMX585_MODE_COMMON] = imx585_mode_common,
 };
 
-static const int imx585_25fps[] = {
-	25,
+static const u16 imx585_hmax_4lane_1440[] = {
+	[IMX585_MODE_3856X2180] = 660,
+	[IMX585_MODE_1928X1090] = 550,
+};
+
+static const u16 imx585_hmax_2lane_720[] = {
+	[IMX585_MODE_3856X2180] = 2640,
+	[IMX585_MODE_1928X1090] = 2200,
+};
+
+static const int imx585_50fps[] = {
+	50,
+};
+
+static const int imx585_60fps[] = {
+	60,
 };
 
 /*
@@ -412,8 +425,8 @@ static const int imx585_25fps[] = {
  * device tree!
  */
 static const struct camera_common_frmfmt imx585_frmfmt[] = {
-	{ { 3856, 2180 }, imx585_25fps, 1, 0, IMX585_MODE_3856X2180 },
-	{ { 1928, 1090 }, imx585_25fps, 1, 0, IMX585_MODE_1928X1090 },
+	{ { 3856, 2180 }, imx585_50fps, 1, 0, IMX585_MODE_3856X2180 },
+	{ { 1928, 1090 }, imx585_60fps, 1, 0, IMX585_MODE_1928X1090 },
 };
 
 #endif /* __IMX585_MODE_TBLS_H__ */
